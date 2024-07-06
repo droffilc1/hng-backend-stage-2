@@ -20,12 +20,30 @@ jwt = JWTManager(app)
 
 class User(db.Model):
     """User class"""
-    userId = db.Column(db.String, primary_key=True, unique=True)
+    userId = db.Column(db.String, primary_key=True,
+                       default=lambda: str(uuid.uuid4()), unique=True)
     firstName = db.Column(db.String, nullable=False)
     lastName = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     password = db.Column(db.String, nullable=False)
     phone = db.Column(db.String)
+
+
+class Organisation(db.Model):
+    """Organisation class."""
+    orgId = db.Column(db.String, primary_key=True,
+                      default=lambda: str(uuid.uuid4()), unique=True)
+    name = db.Column(db.String, nullable=False)
+    description = db.Column(db.String)
+    created_by = db.Column(db.String, db.ForeignKey('user.userId'))
+
+
+user_organisations = db.Table('user_organisations',
+                              db.Column('user_id', db.String, db.ForeignKey(
+                                  'user.userId'), primary_key=True),
+                              db.Column('organisation_id', db.String, db.ForeignKey(
+                                  'organisation.orgId'), primary_key=True)
+                              )
 
 
 @app.route('/auth/register', methods=['POST'])
@@ -44,6 +62,12 @@ def register():
         password=hashed_password,
         phone=data.get('phone')
     )
+
+    default_org = Organisation(
+        name=f"{data['firstName']}'s Organisation",
+        created_by=new_user.userId
+    )
+    new_user.organisations.append(default_org)
 
     try:
         db.session.add(new_user)
