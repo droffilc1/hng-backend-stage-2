@@ -17,3 +17,13 @@ app.config['JWT_SECRET_KEY'] = 'your_jwt_secret_key'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 jwt = JWTManager(app)
+
+
+class User(db.Model):
+    """User class"""
+    userId = db.Column(db.String, primary_key=True, unique=True)
+    firstName = db.Column(db.String, nullable=False)
+    lastName = db.Column(db.String, nullable=False)
+    email = db.Column(db.String, unique=True, nullable=False)
+    password = db.Column(db.String, nullable=False)
+    phone = db.Column(db.String)
